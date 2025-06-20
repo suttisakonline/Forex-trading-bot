@@ -1,0 +1,16 @@
+{
+    "episode": 370,
+    "reward": 0,
+    "timestamp": "2025-06-19T22:59:43.766834",
+    "trade_stats": {
+        "total_trades": 17,
+        "winning_trades": 7,
+        "losing_trades": 10,
+        "win_rate": 0.4117647058823529,
+        "avg_profit": 25.81701439448423,
+        "avg_loss": 25.46264107999376,
+        "profit_factor": 0.7097421677258072,
+        "max_consecutive_wins": 2,
+        "max_consecutive_losses": 3
+    }
+}

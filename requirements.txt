@@ -1,0 +1,41 @@
+# Core dependencies
+pandas              # pandas-dev
+numpy               # numpy team
+scikit-learn        # scikit-learn developers
+seaborn             # Michael Waskom and contributors
+wandb               # Weights & Biases, Inc.
+MetaTrader5         # MetaQuotes Software Corp. (Windows only, Python 3.7–3.11)
+python-dotenv       # Saurabh Kumar
+
+# Deep learning dependencies (Tested with DirectML for AMD GPUs, e.g., RX 6700, on Python 3.10)
+torch==2.0.0                # PyTorch (Meta AI)
+torch-directml==0.2.0.dev230426   # Microsoft (DirectML)
+
+# Optional/other dependencies
+mypy                # Jukka Lehtosalo and contributors
+
+# Machine Learning & Deep Learning
+stable-baselines3==2.1.0
+gymnasium==0.28.1          # Farama Foundation
+shimmy==0.2.1
+pytorch-lightning==2.0.2
+optuna==3.2.0
+
+# Monitoring & Visualization
+plotly==5.14.1
+
+# GPU Acceleration
+pyopencl==2023.1.4
+mako==1.2.4
+pytools==2023.1.1
+
+# Utilities
+tqdm==4.65.0
+requests==2.31.0
+joblib==1.3.1
+python-dateutil==2.8.2
+pytz==2023.3
+lxml==4.9.3
+
+# Data API
+dukascopy-python           # Dukascopy data downloader (compatible with Python 3.10)
