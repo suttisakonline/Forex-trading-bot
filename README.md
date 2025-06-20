@@ -2,6 +2,8 @@
 
 A sophisticated Forex trading bot that uses Proximal Policy Optimization (PPO) reinforcement learning to make trading decisions. The bot features dynamic position sizing, AMD GPU acceleration via DirectML and OpenCL (specifically for AMD GPUs like the RX 6700/gfx1031, which do not support AMD ROCm), and live trading integration with MetaTrader 5.
 
+GPU Acceleration (AMD) WSL doesn’t support DirectML or AMD ROCm. So GPU acceleration won’t work unless you’re using WSL2 with NVIDIA GPU + CUDA. Since you’re on AMD, you’re limited to CPU-only PyTorch inside WSL.
+
 ## ⚡️ Data Provider: Dukascopy (NEW)
 
 **This project now uses [Dukascopy](https://www.dukascopy.com/) as the sole source for historical forex data.**

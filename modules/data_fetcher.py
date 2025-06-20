@@ -89,14 +89,14 @@ class DataFetcher:
         return df
 
     def get_latest_price(self, symbol: str) -> float:
-        """Get the latest price for a symbol using Twelve Data"""
+        """Get the latest close price for a symbol from the most recent row in the Dukascopy-downloaded CSV file."""
         try:
-            ts = self.td.time_series(symbol=symbol, interval='1min', outputsize=1)
-            data = ts.as_pandas()
-            if data is not None and not data.empty:
-                return float(data['close'].iloc[-1])
+            # Load the latest data from the CSV file for the given symbol
+            df = self.fetch_historical_data(download_if_missing=False, symbol=symbol)
+            if not df.empty:
+                return float(df['close'].iloc[-1])
             else:
-                logger.error(f"No latest price found for {symbol}")
+                logger.error(f"No data found for {symbol}")
                 return 0.0
         except Exception as e:
             logger.error(f"Error getting latest price for {symbol}: {str(e)}")

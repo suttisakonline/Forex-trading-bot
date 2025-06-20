@@ -106,6 +106,10 @@ def learning_rate_schedule(progress):
     final_lr = FINAL_LR
     min_lr = MIN_LR  # Minimum learning rate floor
     warmup_steps = WARMUP_STEPS  # Fraction of training for warmup
+     # Calculate date range
+    end_date = datetime.now()
+    start_date = end_date - timedelta(days=YEARS * 365)  # Use timedelta instead of DateOffset
+    print(f"Received start_date: {start_date}, end_date: {end_date}")
     
     if progress < warmup_steps:
         # Linear warmup
@@ -116,8 +120,10 @@ def learning_rate_schedule(progress):
         cosine_decay = 0.5 * (1 + np.cos(np.pi * progress))  # Cosine decay from 1 to 0
         lr = final_lr + (initial_lr - final_lr) * cosine_decay
         return max(lr, min_lr)  # Ensure learning rate doesn't go below minimum
+    
+    
 
-def download_historical_data(symbol=SYMBOL, timeframe=TIMEFRAME, years=YEARS):
+def fetch_historical_data(self, download_if_missing=False, symbol=None, timeframe=None, start_date=None, end_date=None):
     """Download historical data using DataFetcher
     
     Args:
@@ -125,13 +131,15 @@ def download_historical_data(symbol=SYMBOL, timeframe=TIMEFRAME, years=YEARS):
         timeframe: Timeframe in Alpha Vantage format ('1m', '5m', '15m', '30m', '1h', '4h', '1d', '1w')
         years: Number of years of historical data to download
     """
-    logger.info(f"Downloading {years} years of historical data for {symbol} at {timeframe} timeframe")
+
+    end_date = datetime.now()
+    start_date = end_date - timedelta(days=YEARS * 365)
+    
+    logger.info(f"Downloading {YEARS} years of historical data for {symbol} at {timeframe} timeframe")
     
     try:
-        # Calculate date range
-        end_date = datetime.now()
-        start_date = end_date - timedelta(days=years * 365)  # Use timedelta instead of DateOffset
-        
+       
+
         # Calculate expected data points
         total_days = (end_date - start_date).days
         if timeframe == "15m":
@@ -150,10 +158,9 @@ def download_historical_data(symbol=SYMBOL, timeframe=TIMEFRAME, years=YEARS):
         # Use DataFetcher to get historical data
         fetcher = DataFetcher()
         df = fetcher.fetch_historical_data(
-            symbol=symbol,
-            timeframe=timeframe,
-            start_date=start_date,
-            end_date=end_date
+        symbol=symbol,
+        timeframe=timeframe,
+        years=YEARS,
         )
 
         if df.empty:
@@ -240,10 +247,11 @@ class CustomRewardWrapper(gym.Wrapper):
                 reward -= self.reward_config['weekly_trade_bonus']
         
         # Update win/loss streaks
-        if reward > 0:
+        if reward > 0: # type: ignore
             self.win_streak += 1
             self.loss_streak = 0
-        elif reward < 0:
+        elif reward < 0: # type: ignore
+            # If reward is negative, it counts as a loss
             self.loss_streak += 1
             self.win_streak = 0
 
@@ -256,7 +264,7 @@ class CustomRewardWrapper(gym.Wrapper):
             reward -= self.reward_config['loss_penalty'] * min(self.loss_streak, 5)
         
         # Update weekly profit
-        self.weekly_profit += reward
+        self.weekly_profit += reward # type: ignore
         
         # Apply weekly profit bonus
         if self.weekly_profit > 0:
@@ -408,7 +416,7 @@ class ProgressCallback(BaseCallback):
             
             # Get current episode info - use EPISODE_LENGTH from config instead of max_steps
             episode = self.n_calls // EPISODE_LENGTH
-            episode_reward = self.training_env.get_attr('episode_reward')[0] if hasattr(self.training_env.envs[0], 'episode_reward') else 0
+            episode_reward = self.training_env.get_attr('episode_reward')[0] if hasattr(self.training_env.envs[0], 'episode_reward') else 0 # type: ignore
             episode_length = EPISODE_LENGTH
             
             # Update episode statistics
@@ -420,7 +428,7 @@ class ProgressCallback(BaseCallback):
             avg_length = np.mean(self.episode_lengths[-100:]) if self.episode_lengths else 0
 
         # Get trade history from the environment
-            env = get_base_env(self.training_env.envs[0])
+            env = get_base_env(self.training_env.envs[0]) # type: ignore
             if hasattr(env, 'trade_history'):
                 self.trade_history = env.trade_history
             

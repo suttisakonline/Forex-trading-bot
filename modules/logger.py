@@ -7,6 +7,9 @@ import os
 from config import LOG_FILE_PATH, LOGS_DIRECTORY
 
 def setup_logger():
+    
+       # Ensure logs directory exists
+    os.makedirs(LOGS_DIRECTORY, exist_ok=True)
     """
     Configure and return a logger for the application
     """

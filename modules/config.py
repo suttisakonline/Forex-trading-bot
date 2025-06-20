@@ -47,13 +47,20 @@ TIMEFRAME_MAP = {
 YEARS = 10  # Number of years of historical data to download
 
 # === 2. Directory Paths ===
-BASE_DIR = Path(__file__).parent.parent  # Project root directory
-DATA_DIRECTORY = BASE_DIR / "data"  # Directory for historical data
-MODELS_DIRECTORY = BASE_DIR / "models"  # Directory for saved models
-REPORTS_DIRECTORY = BASE_DIR / "reports"  # Directory for reports
-LOGS_DIRECTORY = BASE_DIR / "logs"  # Directory for logs
+from pathlib import Path
+
+# === 2. Directory Paths ===
+BASE_DIR = Path(__file__).resolve().parent.parent  # Project root directory
+DATA_DIRECTORY = BASE_DIR / "data"
+MODELS_DIRECTORY = BASE_DIR / "models"
+REPORTS_DIRECTORY = BASE_DIR / "reports"
+LOGS_DIRECTORY = BASE_DIR / "logs"
+LOG_FILE_PATH = LOGS_DIRECTORY / "swing_trading.log"
+
+# Create directories if they don't exist
 for directory in [DATA_DIRECTORY, MODELS_DIRECTORY, REPORTS_DIRECTORY, LOGS_DIRECTORY]:
-    directory.mkdir(parents=True, exist_ok=True)  # Create directories if they don't exist
+    directory.mkdir(parents=True, exist_ok=True)
+
     
 
 # === Device/GPU Settings ===
