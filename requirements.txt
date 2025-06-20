@@ -1,11 +1,12 @@
 # Core dependencies
-pandas              # pandas-dev
-numpy               # numpy team
-scikit-learn        # scikit-learn developers
-seaborn             # Michael Waskom and contributors
-wandb               # Weights & Biases, Inc.
-MetaTrader5         # MetaQuotes Software Corp. (Windows only, Python 3.7–3.11)
-python-dotenv       # Saurabh Kumar
+pandas==2.3.0              # pandas-dev
+numpy==2.1.0               # numpy team
+scikit-learn==1.4.2        # scikit-learn developers
+seaborn==0.13.2            # Michael Waskom and contributors
+wandb==0.16.6               # Weights & Biases, Inc.
+# MetaTrader5==5.0.37  MetaQuotes Software Corp. (Windows only, Python 3.7–3.11)  isnt support by WSL
+    
+python-dotenv==1.0.1       # Saurabh Kumar
 
 # Deep learning dependencies (Tested with DirectML for AMD GPUs, e.g., RX 6700, on Python 3.10)
 torch==2.0.0                # PyTorch (Meta AI)
