@@ -47,13 +47,6 @@ time,open,high,low,close,volume
 - As a result, the backtesting and training will **default to using the CPU** until this issue is fixed in a future torch-directml release.
 - This is a known issue and has been reported to the DirectML GitHub repository. If you need GPU acceleration, monitor the [DirectML GitHub issues](https://github.com/microsoft/DirectML/issues) for updates or fixes.
 
-## Technologies and Libraries for GPU Acceleration
-
-- **DirectML**: Provides hardware-accelerated deep learning on AMD GPUs (Windows only)
-- **OpenCL**: Used for some low-level GPU operations and compatibility checks ([Khronos Group GitHub](https://github.com/KhronosGroup/OpenCL-ICD-Loader))
-- **PyTorch**: Main deep learning framework; can use DirectML as a backend for AMD GPU support
-- **torch-directml**: PyTorch extension enabling DirectML backend ([GitHub](https://github.com/microsoft/DirectML))
-- **NumPy, pandas**: For data processing (CPU, but compatible with GPU workflows)
 
 > **Note:**
 > - This project does **not** use or require torchvision.
@@ -62,42 +55,12 @@ time,open,high,low,close,volume
 > - To use Nvidia GPUs, you must modify the code to use the standard CUDA backend in PyTorch.
 > - **GPU acceleration is tested and working with torch==2.0.1 and torch-directml==0.2.0.dev230426 as of June 2024.**
 
-## Project Structure
-
-```
-Forex Trading Bot/
-├── main.py                # Main entry point for the application
-├── modules/               # Modular components
-│   ├── __init__.py        # Module initialization
-│   ├── config.py          # Configuration settings
-│   ├── data_processing.py # Data fetching and preprocessing
-│   ├── economic_calendar.py # Economic event handling
-│   ├── execution.py       # Trade execution and management
-│   ├── logger.py          # Logging utilities
-│   ├── model.py           # Machine learning models
-│   ├── signals.py         # Trading signal generation
-│   └── visualization.py   # Performance visualization
-├── data/                  # Stored market data
-├── logs/                  # Application logs
-├── models/                # Saved ML models
-└── reports/               # Performance reports and charts
-```
-
-The bot consists of several key modules:
-- **`modules/config.py`**: **All configurable variables** - trading parameters, model settings, risk management, etc.
-- **`modules/environment.py`**: Trading environment for reinforcement learning
-- **`modules/model.py`**: PPO model implementation with PyTorch Lightning
-- **`modules/data_fetcher.py`**: Historical and real-time data fetching
-- **`modules/live_trading.py`**: MetaTrader 5 integration for live trading
-- **`modules/debug.py`**: Comprehensive analytics and visualization
-- **`modules/logger.py`**: Application logging
-
 ## Setup
 
 ### Prerequisites
 
-- Python 3.9+
-- MetaTrader 5 account
+- Python 3.10
+- MetaTrader 5 account (only need if you are going to run the live trading module)
 - AMD GPU (for acceleration) 
 
 ### Weights & Biases (wandb) Setup
@@ -131,10 +94,9 @@ You can use your own data or download from any source and save it in this format
 
 ## Technologies and Libraries for GPU Acceleration
 
-- **DirectML**: Provides hardware-accelerated deep learning on AMD GPUs (Windows only)
+- **DirectML**: Provides hardware-accelerated deep learning on AMD GPUs (Windows only) ([GitHub](https://github.com/microsoft/DirectML))
 - **OpenCL**: Used for some low-level GPU operations and compatibility checks ([Khronos Group GitHub](https://github.com/KhronosGroup/OpenCL-ICD-Loader))
 - **PyTorch**: Main deep learning framework; can use DirectML as a backend for AMD GPU support
-- **torch-directml**: PyTorch extension enabling DirectML backend ([GitHub](https://github.com/microsoft/DirectML))
 - **NumPy, pandas**: For data processing (CPU, but compatible with GPU workflows)
 
 > **Note:**
@@ -142,22 +104,23 @@ You can use your own data or download from any source and save it in this format
 > - This project is built and tested for AMD GPUs like the RX 6700 (gfx1031) that do **not** support AMD ROCm.
 > - GPU acceleration is achieved via OpenCL and DirectML, not ROCm.
 > - To use Nvidia GPUs, you must modify the code to use the standard CUDA backend in PyTorch.
-> - **GPU acceleration is tested and working with torch==2.0.1 and torch-directml==0.2.0.dev230426 as of June 2024.**
+> - **GPU acceleration is tested and working with torch==2.0.0 and torch-directml==0.2.0.dev230426 as of June 2024.**
 
 ## Project Structure
 
 ```
 Forex Trading Bot/
-├── main.py                # Main entry point for the application
-├── modules/               # Modular components
+├──modules/   
+│   ├── main.py                # Main entry point for the application
+│   ├── modules/               # Modular components
 │   ├── __init__.py        # Module initialization
 │   ├── config.py          # Configuration settings
-│   ├── data_processing.py # Data fetching and preprocessing
-│   ├── economic_calendar.py # Economic event handling
-│   ├── execution.py       # Trade execution and management
+│   ├── data_fetcher.py # Data fetching and preprocessing
+│   ├── dukascopy_downloader.py # gets data forex data
+│   ├── live_trading.py       # live trading with model
 │   ├── logger.py          # Logging utilities
 │   ├── model.py           # Machine learning models
-│   ├── signals.py         # Trading signal generation
+│   ├── debug.py         # live training debugging
 │   └── visualization.py   # Performance visualization
 ├── data/                  # Stored market data
 ├── logs/                  # Application logs
@@ -167,8 +130,9 @@ Forex Trading Bot/
 
 The bot consists of several key modules:
 - **`modules/config.py`**: **All configurable variables** - trading parameters, model settings, risk management, etc.
-- **`modules/environment.py`**: Trading environment for reinforcement learning
+- **`modules/main.py`**: Trading environment for reinforcement learning
 - **`modules/model.py`**: PPO model implementation with PyTorch Lightning
+- **`modules/dukascopy_downloader.py`**: downloads the data from dukas
 - **`modules/data_fetcher.py`**: Historical and real-time data fetching
 - **`modules/live_trading.py`**: MetaTrader 5 integration for live trading
 - **`modules/debug.py`**: Comprehensive analytics and visualization
@@ -202,13 +166,7 @@ This project now uses [Twelve Data](https://twelvedata.com/) for all historical 
 
 ### Setup
 - Install the required packages:
-  ```bash
-  pip install twelvedata requests python-dotenv
-  ```
-- Add your Twelve Data API key to your configuration (see `modules/config.py`).
-- Or, create a `.env` file at the project root with:
-  ```env
-  TWELVE_DATA_API_KEY=your_twelvedata_api_key
+pip install -r requirements.txt
   ```
 
 ### Installation
