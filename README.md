@@ -138,32 +138,6 @@ The bot consists of several key modules:
 - **`modules/debug.py`**: Comprehensive analytics and visualization
 - **`modules/logger.py`**: Application logging
 
-## Setup
-
-### Prerequisites
-
-- Python 3.9+
-- MetaTrader 5 account
-- AMD GPU (for acceleration) 
-
-### Weights & Biases (wandb) Setup
-
-This project uses [Weights & Biases (wandb)](https://wandb.ai/) for experiment tracking, logging, and visualization of training runs and results.
-
-Before running any training or backtesting, you will need to log in to your wandb account in the terminal:
-
-```bash
-wandb login
-```
-
-This command will prompt you for your wandb API key and authenticate your machine. It enables automatic logging of metrics, model checkpoints, and visualizations to your wandb dashboard for easy monitoring and analysis.
-
-If you do not have a wandb account, you can create one for free at https://wandb.ai/.
-
-## Data Source
-
-This project now uses [Twelve Data](https://twelvedata.com/) for all historical and real-time forex data fetching. You must obtain a free API key from Twelve Data to use the bot.
-
 ### Setup
 - Install the required packages:
 pip install -r requirements.txt
