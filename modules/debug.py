@@ -79,7 +79,7 @@ class DebugLogger:
         self.optuna_study = None
         self.portfolio_metrics = {}
     
-    def log_training_progress(self, episode: int, timesteps: int, speed: float, env_info: Dict[str, Any] = None):
+    def log_training_progress(self, episode: int, timesteps: int, speed: float, env_info: Dict[str, Any] = None): 
         """Log training progress with current environment info"""
         self.training_stats['episode_number'] = episode
         self.training_stats['timesteps'] = timesteps

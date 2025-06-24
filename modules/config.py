@@ -229,7 +229,7 @@ PORTFOLIO_AXIS_FONTSIZE = 12  # Font size for axis labels
 
 # === 12. Other/Advanced ===
 LOG_FILE_PATH = 'logs/swing_trading.log'  # Main log file path
-DATA_CSV_PATH = os.path.join("data", f"{safe_symbol}_{start_str}_{end_str}.csv")  # Path to historical data CSV # type: ignore
+DATA_CSV_PATH = 'data/{SYMBOL}_{{start}_{{end}.csv'  # Path to historical data CSV # type: ignore
 INITIAL_LR = 3e-4  # Initial learning rate for schedule
 FINAL_LR = 1e-4  # Final learning rate for schedule
 MIN_LR = 5e-5  # Minimum learning rate for schedule

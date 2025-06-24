@@ -442,9 +442,9 @@ class TradingEnvironment(gym.Env):
             dynamic_slippage = min(dynamic_slippage, self.slippage * 3)  # Max 3x base slippage
             
             return {
-                'spread': dynamic_spread,
-                'slippage': dynamic_slippage
-            }
+            'spread': dynamic_spread,
+            'slippage': dynamic_slippage
+}
             
         except Exception as e:
             # Fallback to base costs if calculation fails

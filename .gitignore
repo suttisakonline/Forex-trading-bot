@@ -13,6 +13,7 @@ reports/
 # Distribution / packaging
 .Python
 build/
+models/
 develop-eggs/
 dist/
 downloads/

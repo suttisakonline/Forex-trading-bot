@@ -118,10 +118,10 @@ def download_dukascopy_csv(symbol=None, timeframe=None, start_date=None, end_dat
     
     # Always generate the output path
     os.makedirs('data', exist_ok=True)
-    start_str = start_date.strftime('%Y%m%d')
-    end_str = end_date.strftime('%Y%m%d')
+    start = start_date.strftime('%Y%m%d')
+    end = end_date.strftime('%Y%m%d')
     safe_symbol = symbol.replace('/', '_').replace(' ', '').replace('\\', '_')
-    output_path = os.path.join('data', f"{safe_symbol}_{start_str}_{end_str}.csv")
+    output_path = os.path.join('data', f"{safe_symbol}_{start}_{end}.csv")
     print(f"[INFO] Output path: {output_path}")
     
     df_all.to_csv(output_path, index=False)
