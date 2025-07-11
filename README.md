@@ -2,24 +2,20 @@
 
 A sophisticated Forex trading bot that uses Proximal Policy Optimization (PPO) reinforcement learning to make trading decisions. The bot features dynamic position sizing, AMD GPU acceleration via DirectML and OpenCL (specifically for AMD GPUs like the RX 6700/gfx1031, which do not support AMD ROCm), and live trading integration with MetaTrader 5.
 
-GPU Acceleration (AMD) WSL doesn’t support DirectML or AMD ROCm. So GPU acceleration won’t work unless you’re using WSL2 with NVIDIA GPU + CUDA. Since you’re on AMD, you’re limited to CPU-only PyTorch inside WSL.
-
 ## ⚡️ Data Provider: Dukascopy (NEW)
 
 **This project now uses [Dukascopy](https://www.dukascopy.com/) as the sole source for historical forex data.**
 
-- Data is downloaded directly from Dukascopy in multi-year intervals (chunks) to avoid server and memory issues.
-- All chunks are concatenated to create a single, continuous historical dataset covering the full requested date range (e.g., 10 years).
-- The resulting CSV is saved in the `data/` directory (e.g., `data/EUR_USD_20150622_20250619.csv`).
-- No API key or .env setup is required for data.
+- Data is automatically downloaded in multi-year intervals and concatenated to create a continuous dataset.
+- Saved in the `data/` directory (e.g., `data/EUR_USD_20150622_20250619.csv`).
+- No API key or `.env` setup required for data.
 
 ### How the Download Works
 
-- The bot automatically downloads historical data for the configured symbol and timeframe.
-- Data is fetched in 3-year intervals (by default) to avoid timeouts and large memory usage.
+- Data is fetched in 3-year intervals (by default) to prevent timeouts and memory issues.
 - Each chunk is a DataFrame with a datetime index and OHLCV columns.
-- All chunks are concatenated, the datetime index is converted to a `time` column, and the final DataFrame is saved as a CSV.
-- The CSV always includes: `time, open, high, low, close, volume`.
+- All chunks are concatenated and saved as a single CSV with columns: `time, open, high, low, close, volume`.
+- The bot handles all data fetching and formatting automatically.
 
 **Example CSV header:**
 ```csv
@@ -28,183 +24,148 @@ time,open,high,low,close,volume
 ...
 ```
 
-**You do not need to manually download or prepare data.** The bot will handle all data fetching and formatting automatically.
-
 ## 🚀 Features
 
-- **Reinforcement Learning**: Uses PPO algorithm for autonomous trading decisions
-- **Dynamic Position Sizing**: Configurable position sizes based on market conditions and risk management
-- **AMD GPU Acceleration**: Optimized for AMD hardware using DirectML and OpenCL (AMD ONLY)
-- **Live Trading**: Direct integration with MetaTrader 5 for real-time trading
+- **Reinforcement Learning**: PPO for autonomous trading decisions
+- **Dynamic Position Sizing**: Adjusts positions based on market/risk
+- **AMD GPU Acceleration**: DirectML and OpenCL (AMD ONLY)
+- **Live Trading**: MetaTrader 5 integration for real-time trading
 - **Comprehensive Analytics**: Detailed performance tracking and visualization
-- **Risk Management**: Built-in stop-loss, take-profit, and trade frequency limits
-- **Hyperparameter Optimization**: Automated tuning using Optuna
+- **Risk Management**: Stop-loss, take-profit, trade frequency limits
+- **Hyperparameter Optimization**: Automated tuning with Optuna
+- **Weights & Biases Integration**: Experiment tracking, logging, and visualization
 
-## ⚠️ Note on GPU Acceleration and test_directml.py
+## ⚠️ Note on GPU Acceleration
 
-- **test_directml.py is currently not working** due to a bug in the latest torch-directml package ("TypeError: 'staticmethod' object is not callable").
-- This bug affects static methods like `has_float64_support` and `gpu_memory` in torch-directml, causing the test script to fail.
-- As a result, the backtesting and training will **default to using the CPU** until this issue is fixed in a future torch-directml release.
-- This is a known issue and has been reported to the DirectML GitHub repository. If you need GPU acceleration, monitor the [DirectML GitHub issues](https://github.com/microsoft/DirectML/issues) for updates or fixes.
-
+- **test_directml.py is currently not working** due to a bug in torch-directml ("TypeError: 'staticmethod' object is not callable").
+- Backtesting and training will **default to CPU** until this issue is fixed.
+- For updates, see [DirectML GitHub issues](https://github.com/microsoft/DirectML/issues).
 
 > **Note:**
-> - This project does **not** use or require torchvision.
-> - This project is built and tested for AMD GPUs like the RX 6700 (gfx1031) that do **not** support AMD ROCm.
-> - GPU acceleration is achieved via OpenCL and DirectML, not ROCm.
-> - To use Nvidia GPUs, you must modify the code to use the standard CUDA backend in PyTorch.
-> - **GPU acceleration is tested and working with torch==2.0.1 and torch-directml==0.2.0.dev230426 as of June 2024.**
+> - No torchvision is required.
+> - Designed for AMD GPUs like RX 6700 (gfx1031) that do **not** support AMD ROCm.
+> - GPU acceleration via DirectML and OpenCL, not ROCm.
+> - For Nvidia GPUs, modify code to use CUDA backend in PyTorch.
+> - GPU acceleration tested with torch==2.0.1 and torch-directml==0.2.0.dev230426 (June 2024).
 
 ## Setup
 
 ### Prerequisites
 
 - Python 3.10
-- MetaTrader 5 account (only need if you are going to run the live trading module)
-- AMD GPU (for acceleration) 
+- MetaTrader 5 account (for live trading)
+- AMD GPU (for acceleration)
 
 ### Weights & Biases (wandb) Setup
 
-This project uses [Weights & Biases (wandb)](https://wandb.ai/) for experiment tracking, logging, and visualization of training runs and results.
-
-Before running any training or backtesting, you will need to log in to your wandb account in the terminal:
-
-```bash
-wandb login
-```
-
-This command will prompt you for your wandb API key and authenticate your machine. It enables automatic logging of metrics, model checkpoints, and visualizations to your wandb dashboard for easy monitoring and analysis.
-
-If you do not have a wandb account, you can create one for free at https://wandb.ai/.
+1. Sign up at [wandb.ai](https://wandb.ai/) (free).
+2. Log in via terminal:
+   ```bash
+   wandb login
+   ```
+3. Paste your API key when prompted.
 
 ## Data Provider
-This bot now loads historical forex data from a single CSV file located in the `data/` directory (default: `data/forex_data.csv`).
 
-**CSV format requirements:**
-- Columns: `open`, `high`, `low`, `close`, `volume`, and either `time` or `date` (datetime).
-- The datetime column will be used as the DataFrame index.
-- Example header:
-  ```csv
+- Historical data is automatically downloaded as a CSV in the `data/` directory.
+- You can use your own data in the format:
+  ```
   time,open,high,low,close,volume
   2024-01-01 00:00:00,1.1000,1.1010,1.0990,1.1005,1000
   ...
   ```
 
-You can use your own data or download from any source and save it in this format.
-
 ## Technologies and Libraries for GPU Acceleration
 
-- **DirectML**: Provides hardware-accelerated deep learning on AMD GPUs (Windows only) ([GitHub](https://github.com/microsoft/DirectML))
-- **OpenCL**: Used for some low-level GPU operations and compatibility checks ([Khronos Group GitHub](https://github.com/KhronosGroup/OpenCL-ICD-Loader))
-- **PyTorch**: Main deep learning framework; can use DirectML as a backend for AMD GPU support
-- **NumPy, pandas**: For data processing (CPU, but compatible with GPU workflows)
-
-> **Note:**
-> - This project does **not** use or require torchvision.
-> - This project is built and tested for AMD GPUs like the RX 6700 (gfx1031) that do **not** support AMD ROCm.
-> - GPU acceleration is achieved via OpenCL and DirectML, not ROCm.
-> - To use Nvidia GPUs, you must modify the code to use the standard CUDA backend in PyTorch.
-> - **GPU acceleration is tested and working with torch==2.0.0 and torch-directml==0.2.0.dev230426 as of June 2024.**
+- **DirectML**: Hardware-accelerated deep learning on AMD GPUs ([GitHub](https://github.com/microsoft/DirectML))
+- **OpenCL**: Low-level GPU operations ([Khronos Group GitHub](https://github.com/KhronosGroup/OpenCL-ICD-Loader))
+- **PyTorch**: Deep learning framework, DirectML backend for AMD GPU
+- **NumPy, pandas**: Data processing
 
 ## Project Structure
 
 ```
 Forex Trading Bot/
-├──modules/   
-│   ├── main.py                # Main entry point for the application
-│   ├── modules/               # Modular components
-│   ├── __init__.py        # Module initialization
-│   ├── config.py          # Configuration settings
-│   ├── data_fetcher.py # Data fetching and preprocessing
-│   ├── dukascopy_downloader.py # gets data forex data
-│   ├── live_trading.py       # live trading with model
-│   ├── logger.py          # Logging utilities
-│   ├── model.py           # Machine learning models
-│   ├── debug.py         # live training debugging
-│   └── visualization.py   # Performance visualization
+├── .venv/                 # Python virtual environment
+├── .vscode/               # VSCode settings
 ├── data/                  # Stored market data
 ├── logs/                  # Application logs
 ├── models/                # Saved ML models
-└── reports/               # Performance reports and charts
+├── modules/   
+│   ├── main.py            # Main entry point for backtesting/training
+│   ├── config.py          # Configuration settings
+│   ├── data_fetcher.py    # Data fetching and preprocessing
+│   ├── dukascopy_downloader.py # Downloads forex data
+│   ├── live_trading.py    # MetaTrader 5 live trading
+│   ├── logger.py          # Logging utilities
+│   ├── model.py           # PPO implementation (PyTorch Lightning)
+│   ├── debug.py           # Analytics and visualization
+│   └── visualization.py   # Performance visualization
+├── reports/               # Performance reports and charts
+├── wandb/                 # Weights & Biases experiment tracking
+├── .env                   # Environment variables (MT5 credentials)
+├── .gitignore             # Git ignore rules
+├── mypy.ini               # Type checking config
+├── py.typed               # Typing marker file
+├── requirements.txt       # Python dependencies
+├── test_directml.py       # GPU test script
+└── README.md              # This file
 ```
+![image2](image2)
 
-The bot consists of several key modules:
-- **`modules/config.py`**: **All configurable variables** - trading parameters, model settings, risk management, etc.
-- **`modules/main.py`**: Trading environment for reinforcement learning
-- **`modules/model.py`**: PPO model implementation with PyTorch Lightning
-- **`modules/dukascopy_downloader.py`**: downloads the data from dukas
-- **`modules/data_fetcher.py`**: Historical and real-time data fetching
-- **`modules/live_trading.py`**: MetaTrader 5 integration for live trading
-- **`modules/debug.py`**: Comprehensive analytics and visualization
-- **`modules/logger.py`**: Application logging
+## Configuration
 
-### Setup
-- Install the required packages:
-pip install -r requirements.txt
-  ```
-
-### Installation
-
-1. Clone the repository
-```
-git clone https://github.com/Stefodan21/forex-trading-bot.git
-cd forex-trading-bot
-```
-
-2. Create and activate virtual environment:
-```bash
-python -m venv .venv
-# Windows
-.venv\Scripts\activate
-# Linux/Mac
-source .venv/bin/activate
-```
-
-3. Install dependencies:
-```bash
-pip install -r requirements.txt
-```
-
-4. Test GPU acceleration:
-```bash
-python test_directml.py
-```
-
-### Configuration
-
-**All configurable variables are located in `modules/config.py`**, including:
+All configurable variables are in `modules/config.py`:
 
 - **Trading Parameters**: Symbols, timeframes, position sizes, trade limits
-- **Risk Management**: Stop-loss, take-profit, maximum trades
+- **Risk Management**: Stop-loss, take-profit, max trades
 - **Model Settings**: Learning rates, batch sizes, training parameters
 - **MetaTrader 5**: Account credentials, server settings
 - **Reward System**: Reward weights and penalties
 - **Optimization**: Hyperparameter search spaces
 
-> **Tip:** If model training uses too much memory or is too slow for your hardware, you can adjust a variety of parameters in `modules/config.py` to better fit your system:
-> - `BATCH_SIZE`, `N_STEPS`, `PPO_BATCH_SIZE`, `PPO_N_STEPS`: Lowering these reduces memory usage and can speed up training.
-> - `PPO_LEARNING_RATE`, `PPO_N_EPOCHS`, `PPO_GAMMA`, `PPO_CLIP_RANGE`, `PPO_ENT_COEF`, `PPO_VF_COEF`, `PPO_MAX_GRAD_NORM`, `PPO_TARGET_KL`, `PPO_USE_SDE`, `PPO_SDE_SAMPLE_FREQ`, `PPO_VERBOSE`: Tuning these can help optimize training performance and stability.
-> - You can also adjust other training, model, and risk management parameters to suit your hardware and trading goals.
-> - Lower values for batch size and steps are recommended for systems with less RAM or VRAM.
+> **Tip:** Lower `BATCH_SIZE` and `N_STEPS` for less memory usage. Tune parameters for your hardware and goals.
 
 ### Environment Variables
 
-Create a `.env` file in the project root for secure credential storage:
-
-I recommend you use a demo account credentials first to test the model after it has finished the backtesting in a demo environment before changing it to live account credentials
-```env
+Create a `.env` file in the project root for MetaTrader 5 credentials:
+```
 MT5_LOGIN=your_mt5_account_number
 MT5_PASSWORD=your_mt5_password
 MT5_SERVER=your_broker_server
 ```
+**Important:** Add `.env` to `.gitignore` to keep credentials secure.
 
-**Important**: Add `.env` to your `.gitignore` to keep credentials secure.
+## Installation
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/Stefodan21/forex-trading-bot.git
+   cd forex-trading-bot
+   ```
+
+2. Create and activate a virtual environment:
+   ```bash
+   python -m venv .venv
+   # Windows
+   .venv\Scripts\activate
+   # Linux/Mac
+   source .venv/bin/activate
+   ```
+
+3. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. Test GPU acceleration:
+   ```bash
+   python test_directml.py
+   ```
 
 ## Usage
 
 ### Backtesting/Training
-
-To train and backtest the model on the number of years of historical data downloaded from Dukascopy, run:
 
 ```bash
 cd modules
@@ -213,53 +174,24 @@ python main.py
 
 ### Live Trading
 
-To run the bot in live trading mode with MetaTrader 5, use:
-
 ```bash
 cd modules
 python live_trading.py
 ```
 
-> **Note:**
-> - `main.py` is dedicated to backtesting and training only.
-> - `live_trading.py` is dedicated to live trading only.
-> - There is no need to use any `--mode` argument; each script is single-purpose.
+> **Note:**  
+> - `main.py` is for backtesting/training only.  
+> - `live_trading.py` is for live trading only.
 
-## Configuration Parameters
+### Model Saving and Live Trading
 
-**All parameters are configurable in `modules/config.py`**:
-
-### Trading Configuration
-- `TRADING_SYMBOL`: Default trading symbol (EURUSD)
-- `TIMEFRAME`: Data timeframe (M15)
-- `MIN_POSITION_SIZE` / `MAX_POSITION_SIZE`: Dynamic position sizing range
-- `WEEKLY_TRADE_LIMIT`: Maximum trades per week
-- `INITIAL_BALANCE`: Starting account balance
-- `YEARS`: Number of years of historical data to use for backtesting/training
-
-### Risk Management
-- `STOP_LOSS`: Stop loss percentage per trade
-- `PROFIT_TARGET`: Take profit percentage per trade
-- `MAX_DAILY_TRADES`: Daily trade limit
-- `MAX_WEEKLY_TRADES`: Weekly trade limit
-
-### Model Parameters
-- `PPO_LEARNING_RATE`: Learning rate for PPO algorithm
-- `PPO_BATCH_SIZE`: Training batch size
-- `PPO_N_EPOCHS`: Number of training epochs
-- `PPO_GAMMA`: Discount factor for future rewards
-
-### MetaTrader 5 Settings
-- `MT5_CONFIG`: Account credentials and server settings
-- `BASE_DEVIATION`: Order execution deviation
-- `MAGIC_BASE`: Unique order identifier
+- After training, models are saved in the `models/` folder.
+- Update `MODEL_PATH` in `modules/config.py` to point to your trained model (e.g., `models/final_model.zip`) for live trading.
 
 ## Performance Tracking
 
-The bot provides comprehensive analytics through the `debug.py` module:
-
-- Real-time performance metrics
-- Trade analysis and statistics
+- Real-time metrics
+- Trade analysis/statistics
 - Portfolio visualization
 - Risk-adjusted returns
 - Drawdown analysis
@@ -267,27 +199,16 @@ The bot provides comprehensive analytics through the `debug.py` module:
 
 ## Troubleshooting
 
-### GPU Issues
-- Ensure AMD drivers are up to date
-- Verify DirectML installation: `python test_directml.py`
-- Check OpenCL compatibility
-
-### MetaTrader 5 Connection
-- Verify account credentials in `.env` file
-- Ensure MT5 is running and logged in
-- Check server settings match your broker
-
-### Training Issues
-- Verify data files exist in `data/` directory
-- Check available memory for large datasets
-- Monitor GPU temperature during training
+- **GPU Issues**: Update AMD drivers, verify DirectML (run `python test_directml.py`), check OpenCL compatibility.
+- **MetaTrader 5**: Verify `.env` credentials, make sure MT5 is running/logged in, check server settings.
+- **Training Issues**: Confirm data files in `data/`, check system memory, monitor GPU temps.
 
 ## Security
 
-- **Never commit credentials** to version control
-- Use `.env` file for sensitive information
-- Regularly update dependencies
-- Monitor trading activity and account balance
+- Never commit credentials
+- Use `.env` for sensitive info
+- Keep dependencies up to date
+- Monitor trading activity/balance
 
 ## License
 
@@ -297,9 +218,6 @@ This project is licensed under the GNU General Public License v3.0. See the [LIC
 
 This trading bot is for educational and research purposes. Past performance does not guarantee future results. Trading involves substantial risk of loss. Use at your own risk.
 
-## Model Saving and Live Trading
+---
 
-- After training, the trained model is automatically saved in the `models/` folder.
-- When you want to start using the live trading script, update the `MODEL_PATH` in `modules/config.py` to point to the specific trained model file you wish to use (e.g., `models/final_model.zip` or another checkpoint).
-- This ensures the live trading script loads the correct model for real-time trading with MetaTrader 5.
-
+Feel free to contribute, open issues, or fork for your own research!
