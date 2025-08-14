@@ -12,6 +12,7 @@ import logging
 from logger import logger
 from config import SYMBOL, TIMEFRAME, YEARS, DATA_CSV_PATH
 from dukascopy_downloader import download_dukascopy_csv, download_dukascopy_range_csv
+from technical_indicators import TechnicalIndicators
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +43,7 @@ class DataFetcher:
         self.cache_timeout = timedelta(minutes=5)
         self.data_csv_path = DATA_CSV_PATH
 
-    def fetch_historical_data(self, download_if_missing=False, symbol=None, timeframe=None, years: int = YEARS) -> pd.DataFrame:
+    def fetch_historical_data(self, download_if_missing=False, symbol=None, timeframe=None, years: int = YEARS, add_indicators=True) -> pd.DataFrame:
         """
         Load historical forex data from a single CSV file in the data/ directory.
         If the CSV does not exist and download_if_missing is True, download from Dukascopy and reformat.
@@ -52,8 +53,9 @@ class DataFetcher:
             symbol (str): Symbol for Dukascopy download (e.g., 'EURUSD').
             timeframe (str): Timeframe for Dukascopy download (e.g., 'M1').
             years (int): Number of years of historical data to fetch (default: config.YEARS)
+            add_indicators (bool): If True, add technical indicators to the data
         Returns:
-            pd.DataFrame: DataFrame with columns ['open', 'high', 'low', 'close', 'volume'] and a datetime index.
+            pd.DataFrame: DataFrame with columns ['open', 'high', 'low', 'close', 'volume'] and technical indicators with a datetime index.
         Raises:
             FileNotFoundError: If the CSV file does not exist and download_if_missing is False.
             ValueError: If required columns are missing.
@@ -62,30 +64,46 @@ class DataFetcher:
         timeframe = timeframe or self.timeframe
         end_date = datetime.now()
         start_date = end_date - timedelta(days=years * 365)
+        
         # Always download a new file
         logger.info(f"Downloading fresh data from Dukascopy...")
         csv_path = download_dukascopy_range_csv(symbol, timeframe, start_date, end_date)
         if not csv_path or not os.path.exists(csv_path):
             logger.error(f"CSV file not found or download failed: {csv_path}")
             raise FileNotFoundError(f"CSV file not found or download failed: {csv_path}")
+        
         df = pd.read_csv(csv_path)
         print("Loaded CSV columns:", df.columns.tolist())
+        
         # Accept either 'time' or 'date' as the datetime column
         datetime_col = 'time' if 'time' in df.columns else 'date' if 'date' in df.columns else None
         if not datetime_col:
             logger.error("CSV must contain a 'time' or 'date' column.")
             raise ValueError("CSV must contain a 'time' or 'date' column.")
+        
         required_cols = ['open', 'high', 'low', 'close', 'volume']
         for col in required_cols:
             if col not in df.columns:
                 logger.error(f"CSV is missing required column: {col}")
                 raise ValueError(f"CSV is missing required column: {col}")
+        
         df[datetime_col] = pd.to_datetime(df[datetime_col])
         df.set_index(datetime_col, inplace=True)
         df = df[required_cols]
+        
+        # Add technical indicators if requested
+        if add_indicators:
+            logger.info("Adding technical indicators...")
+            ti = TechnicalIndicators()
+            df = ti.add_all_indicators(df, price_col='close')
+            logger.info(f"Added {len(ti.get_feature_names())} technical indicators")
+            print(f"DataFrame with indicators shape: {df.shape}")
+            print(f"Available columns: {df.columns.tolist()[:10]}...")  # Show first 10 columns
+        
         logger.info(f"Loaded {len(df)} rows from {csv_path}")
         logger.info(f"Date range: {df.index.min()} to {df.index.max()}")
-        logger.info(f"Columns: {', '.join(df.columns)}")
+        logger.info(f"Final columns count: {len(df.columns)}")
+        
         return df
 
     def get_latest_price(self, symbol: str) -> float:
