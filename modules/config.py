@@ -13,38 +13,34 @@ Configuration module for the Forex Trading Bot
 import os
 from pathlib import Path
 from datetime import datetime, timedelta
-from dukascopy_python.instruments import (
-    INSTRUMENT_FX_MAJORS_EUR_USD,
-    INSTRUMENT_FX_MAJORS_GBP_USD,
-    INSTRUMENT_FX_MAJORS_USD_JPY,
-    INSTRUMENT_FX_MAJORS_AUD_USD,
-    INSTRUMENT_FX_MAJORS_USD_CHF,
-    INSTRUMENT_FX_MAJORS_USD_CAD,
-    INSTRUMENT_FX_MAJORS_NZD_USD
-)
-from dukascopy_python import (
-    INTERVAL_TICK,
-    INTERVAL_HOUR_1,
-    INTERVAL_HOUR_4,
-    OFFER_SIDE_BID,
-)
 
 # === 1. Data Download/Source (Dukascopy) ===
+
+# --- การแก้ไขที่ถูกต้องตาม Library ที่ติดตั้งไว้ ---
+# Import ตัวแปร Timeframe ที่ถูกต้องจาก Library โดยตรง
+from dukascopy_python import (
+    INTERVAL_MIN_1,
+    INTERVAL_MIN_5,
+    INTERVAL_HOUR_1,
+    OFFER_SIDE_BID
+)
+
+# ใช้ชื่อย่อของ Symbol เป็น String (ข้อความ)
 SYMBOL_MAP = {
-    INSTRUMENT_FX_MAJORS_EUR_USD,  # EUR/USD symbol for Dukascopy
-    INSTRUMENT_FX_MAJORS_GBP_USD,  # GBP/USD symbol for Dukascopy
-    INSTRUMENT_FX_MAJORS_USD_JPY,  # USD/JPY symbol for Dukascopy
-    INSTRUMENT_FX_MAJORS_AUD_USD,  # AUD/USD symbol for Dukascopy
-    INSTRUMENT_FX_MAJORS_USD_CHF,  # USD/CHF symbol for Dukascopy
-    INSTRUMENT_FX_MAJORS_USD_CAD,  # USD/CAD symbol for Dukascopy
-    INSTRUMENT_FX_MAJORS_NZD_USD   # NZD/USD symbol for Dukascopy
+    'EURUSD',
+    'GBPUSD',
+    'USDJPY',
+    'XAUUSD',
 }
+
+# เรียกใช้ตัวแปร Timeframe ที่ import มาอย่างถูกต้อง
 TIMEFRAME_MAP = {
-    INTERVAL_TICK,     # Tick data interval
-    INTERVAL_HOUR_1,  # 1-hour interval
-    INTERVAL_HOUR_4,  # 4-hour interval
+    INTERVAL_MIN_1,   # สำหรับ M1
+    INTERVAL_MIN_5,   # สำหรับ M5
+    INTERVAL_HOUR_1,  # สำหรับ H1
 }
-YEARS = 10  # Number of years of historical data to download
+
+YEARS = 5  # Number of years of historical data to download
 
 # === 2. Directory Paths ===
 from pathlib import Path
@@ -69,83 +65,84 @@ OPENCL_COMPILER_OUTPUT = '0'  # OpenCL compiler output setting
 
 
 # === 3. Trading Parameters ===
-SYMBOL = INSTRUMENT_FX_MAJORS_EUR_USD  # Default trading symbol
+SYMBOL = 'GBPUSD'  # Default trading symbol
 TIMEFRAME = INTERVAL_HOUR_1  # Default trading timeframe
 INITIAL_BALANCE = 10000  # Starting account balance in USD
 EPISODE_LENGTH = 90  # Number of days per training episode
-SPREAD = 0.0002  # Spread in price (2 pips)
+SPREAD = 0.00005  # Spread in price (2 pips)
 COMMISSION = 0.0001  # Commission per trade (0.01%)
 SLIPPAGE = 0.00005  # Slippage in price (0.5 pips)
+OFFER_SIDE = OFFER_SIDE_BID 
 
 # === 4. Position Sizing ===
-MIN_POSITION_SIZE = 0.15  # Minimum position size in lots
-MAX_POSITION_SIZE = 0.30  # Maximum position size in lots
-POSITION_SIZE_INCREMENT = 0.05  # Increment for position sizing
+MIN_POSITION_SIZE = 0.1  # Minimum position size in lots
+MAX_POSITION_SIZE = 0.5  # Maximum position size in lots
+POSITION_SIZE_INCREMENT = 0.1  # Increment for position sizing
 
 # === 5. Risk Management ===
-MAX_TRADES_PER_WEEK = 6  # Max trades allowed per week
-MAX_DAILY_TRADES = 10  # Max trades allowed per day
-MAX_WEEKLY_TRADES = 50  # Max trades allowed per week (hard cap)
+MAX_TRADES_PER_WEEK = 100  # Max trades allowed per week
+MAX_DAILY_TRADES = 100  # Max trades allowed per day
+MAX_WEEKLY_TRADES = 200  # Max trades allowed per week (hard cap)
 PROFIT_TARGET = 0.02  # Profit target per trade (2%)
 STOP_LOSS = 0.01  # Stop loss per trade (1%)
 
 # === 6. Training/Backtesting Parameters ===
-MAX_EPISODES = 2200000  # Maximum number of training episodes
-MAX_TIMESTEPS = 10000000  # Maximum number of training timesteps
+MAX_EPISODES = 50000  # Maximum number of training episodes
+MAX_TIMESTEPS = 5000000  # Maximum number of training timesteps
 MIN_EPISODES = 1000  # Minimum number of training episodes
 TARGET_WEEKLY_PROFIT = 1000.0  # Target profit per week in USD
-BATCH_SIZE = 32  # Training batch size
-N_STEPS = 512  # Number of steps per PPO update
-GRADIENT_ACCUMULATION_STEPS = 4  # Gradient accumulation steps
+BATCH_SIZE = 128  # Training batch size
+N_STEPS = 1024  # Number of steps per PPO update
+GRADIENT_ACCUMULATION_STEPS = 1  # Gradient accumulation steps
 
 # === 7. Reward Shaping ===
 REWARD_SHAPING = {
-    'profit_multiplier': 1.0,  # Multiplier for profit rewards
+    'profit_multiplier': 1.5,  # Multiplier for profit rewards
     'loss_penalty': 1.0,  # Penalty for losses
     'win_streak_bonus': 0.2,  # Bonus for consecutive wins
-    'pattern_recognition_bonus': 0.1,  # Bonus for recognizing patterns
-    'position_size_bonus': 0.1,  # Bonus for optimal position size
-    'trade_frequency_bonus': -0.2,  # Penalty for overtrading
-    'weekly_profit_bonus': 0.5,  # Bonus for weekly profit
+    'pattern_recognition_bonus': 0.05,  # Bonus for recognizing patterns
+    'position_size_bonus': 0.05,  # Bonus for optimal position size
+    'trade_frequency_bonus': -0.1,  # Penalty for overtrading
+    'weekly_profit_bonus': 0.0,  # Bonus for weekly profit
     'drawdown_penalty': 0.5,  # Penalty for drawdown
-    'weekly_trade_bonus': -0.3,  # Penalty for not trading weekly
+    'weekly_trade_bonus': 0.0,  # Penalty for not trading weekly
     'profit_target_bonus': 0.5  # Bonus for hitting profit target
 }
-REWARD_BALANCE_CHANGE_WEIGHT = 2.0  # Weight for balance change reward
-REWARD_POSITION_HOLDING_PROFIT = 0.0005  # Reward for holding profitable position
-REWARD_POSITION_HOLDING_LOSS = 0.001  # Penalty for holding losing position
-REWARD_TRADE_PROFIT_WEIGHT = 0.3  # Weight for profitable trade reward
-REWARD_TRADE_LOSS_WEIGHT = 0.1  # Weight for losing trade penalty
-REWARD_TRADE_FREQUENCY = 0.005  # Small reward for executing trades
+REWARD_BALANCE_CHANGE_WEIGHT = 1.0  # Weight for balance change reward
+REWARD_POSITION_HOLDING_PROFIT = 0.0002  # Reward for holding profitable position
+REWARD_POSITION_HOLDING_LOSS = 0.0004  # Penalty for holding losing position
+REWARD_TRADE_PROFIT_WEIGHT = 0.0  # Weight for profitable trade reward
+REWARD_TRADE_LOSS_WEIGHT = 0.0  # Weight for losing trade penalty
+REWARD_TRADE_FREQUENCY = 0.0  # Small reward for executing trades
 
 # === 8. RL/PPO/Model Hyperparameters ===
-RL_TRAINING_STEPS = 1000000  # Total RL training steps
-RL_WINDOW_SIZE = 20  # Window size for RL state
+RL_TRAINING_STEPS = 5000000  # Total RL training steps
+RL_WINDOW_SIZE = 48  # Window size for RL state
 PPO_LEARNING_RATE = 0.0003  # PPO learning rate
 PPO_N_STEPS = 2048  # PPO steps per update
 PPO_BATCH_SIZE = 128  # PPO batch size
-PPO_N_EPOCHS = 10  # PPO epochs per update
-PPO_GAMMA = 0.99  # PPO discount factor
+PPO_N_EPOCHS = 8  # PPO epochs per update
+PPO_GAMMA = 0.985  # PPO discount factor
 PPO_GAE_LAMBDA = 0.95  # PPO GAE lambda
 PPO_CLIP_RANGE = 0.2  # PPO clip range
-PPO_ENT_COEF = 0.01  # PPO entropy coefficient
+PPO_ENT_COEF = 0.015  # PPO entropy coefficient
 PPO_VF_COEF = 0.5  # PPO value function coefficient
 PPO_MAX_GRAD_NORM = 0.5  # PPO max gradient norm
-PPO_TARGET_KL = 0.015  # PPO target KL divergence
+PPO_TARGET_KL = 0.02  # PPO target KL divergence
 PPO_USE_SDE = False  # PPO state-dependent exploration
 PPO_SDE_SAMPLE_FREQ = -1  # PPO SDE sample frequency
 PPO_VERBOSE = 1  # PPO verbosity level
 PPO_PARAMS = {
-    'n_epochs': 10,  # PPO epochs per update
-    'gamma': 0.99,  # PPO discount factor
+    'n_epochs': 8,  # PPO epochs per update
+    'gamma': 0.985,  # PPO discount factor
     'gae_lambda': 0.95,  # PPO GAE lambda
     'clip_range': 0.2,  # PPO clip range
-    'ent_coef': 0.01,  # PPO entropy coefficient
+    'ent_coef': 0.015,  # PPO entropy coefficient
     'vf_coef': 0.5,  # PPO value function coefficient
     'max_grad_norm': 0.5,  # PPO max gradient norm
     'use_sde': False,  # PPO state-dependent exploration
     'sde_sample_freq': -1,  # PPO SDE sample frequency
-    'target_kl': None,  # PPO target KL divergence
+    'target_kl': 0.02,  # PPO target KL divergence
 }
 
 # === 9. MetaTrader 5/Live Trading Config ===
